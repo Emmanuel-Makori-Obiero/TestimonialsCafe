@@ -32,6 +32,13 @@ const gallery = [
   ['venue-front.jpeg', 'Find us in Kasarani', 'venue'], ['grill-feature.jpeg', 'Straight from the grill', 'food'], ['menu-cover.jpeg', 'The real menu, online', 'menu'], ['venue-entry.jpeg', 'Walk in hungry', 'venue'], ['menu-main-course.jpeg', 'Main course, made easy', 'menu'], ['menu-juices.jpeg', 'Bright, fresh, no added sugar', 'food']
 ];
 
+const testimonialVideos = [
+  { src: `${ASSET}testimonial-fries.mp4`, title: 'Fresh from the fryer', description: 'A behind-the-scenes look at chips, chapati, coleslaw, and rotisserie chicken coming out of the kitchen.', quote: 'Straight from the kitchen to the table.' },
+  { src: `${ASSET}testimonial-venue.mp4`, title: 'A familiar Kasarani stop', description: 'A quick walk through the bright juice stand and the everyday energy around Testimony Cafeteria.', quote: 'The place people keep coming back to.' },
+  { src: `${ASSET}testimonial-juice.mp4`, title: 'Fresh juice, made properly', description: 'Sugarcane, lime, a real press, and a cold cup — a simple look at how the healthy drinks are made.', quote: 'Freshness you can see.' },
+  { src: `${ASSET}testimonial-interior.mp4`, title: 'Inside Testimony Cafeteria', description: 'A look inside the cafe, its seating, the menu board, payment details, and the dishes available on the day.', quote: 'Good food, a relaxed room, and plenty to choose from.' }
+];
+
 function Brand({ footer = false }) {
   return <img className={footer ? 'footer-logo' : 'brand-logo'} src={`${ASSET}testimonialscafelogo.jpg`} alt="Testimony Cafeteria" />;
 }
@@ -45,6 +52,7 @@ export default function App() {
   const [isPaused, setIsPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [activeCategory, setActiveCategory] = useState(menu[0].id);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
   const mediaRef = useRef(null);
   const activeSlide = slides[currentSlide];
   const activeMenu = menu.find((category) => category.id === activeCategory) ?? menu[0];
@@ -72,6 +80,11 @@ export default function App() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setTestimonialIndex((index) => (index + 1) % testimonialVideos.length), 8500);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const goToSlide = (index) => setCurrentSlide((index + slides.length) % slides.length);
   const togglePause = () => setIsPaused((paused) => !paused);
   const pauseLabel = isPaused ? 'Resume automatic rotation' : 'Pause automatic rotation';
@@ -91,7 +104,6 @@ export default function App() {
           <img key={activeSlide.src} className="hero-asset" src={activeSlide.src} alt={activeSlide.alt} />
         </div>
         <div className="hero-shade" />
-        <div className="hero-topline"><span className="live-dot" /><span>Good food. Good company.</span><span className="topline-rule" /><span>Kasarani, Nairobi</span></div>
         <div className="hero-content">
           <div className="hero-copy"><span className="eyebrow">{activeSlide.eyebrow}</span><h1>{activeSlide.title}</h1><p>{activeSlide.text}</p><div className="feature-price"><span>{activeSlide.label}</span><strong>{activeSlide.price}</strong></div><a className="hero-link" href="#menu">Browse the full menu <span aria-hidden="true">↗</span></a></div>
           <div className="hero-controls"><button className="round-control" type="button" onClick={() => goToSlide(currentSlide - 1)} aria-label="Previous featured item">←</button><div className="slide-count" aria-live="polite"><span>{String(currentSlide + 1).padStart(2, '0')}</span><span className="count-rule" /><span>0{slides.length}</span></div><button className="round-control" type="button" onClick={() => goToSlide(currentSlide + 1)} aria-label="Next featured item">→</button><button className="round-control pause-control" type="button" onClick={togglePause} aria-label={pauseLabel} aria-pressed={isPaused}>{isPaused ? '▶' : '⏸'}</button></div>
@@ -106,9 +118,9 @@ export default function App() {
 
       <section className="gallery-section" id="gallery"><div className="gallery-head"><div><SectionLabel number="03">From the cafe</SectionLabel><h2>See you<br /><em>at the table.</em></h2></div><p>Real plates, real people, real neighbourhood energy.</p></div><div className="gallery-grid">{gallery.map(([image, caption, tag], index) => <figure className={`gallery-card gallery-${index + 1}`} key={image}><img src={`${ASSET}${image}`} alt={caption} /><figcaption><span>{String(index + 1).padStart(2, '0')}</span><strong>{caption}</strong><small>{tag}</small></figcaption></figure>)}</div></section>
 
-      <section className="testimonial-section" id="testimonials"><div className="testimonial-video"><video controls muted playsInline poster={`${ASSET}guest-testimonial.jpeg`} aria-label="Guest testimonial from Testimony Cafe"><source src={`${ASSET}cafe-video-1.mp4`} type="video/mp4" /></video></div><div className="testimonial-copy"><SectionLabel number="04">Guest stories</SectionLabel><blockquote>“The food is generous, the service is warm, and you leave already planning your next plate.”</blockquote><p>What people come back for: a welcoming table, a clear menu, and food that does exactly what it should.</p></div></section>
+      <section className="testimonial-section" id="testimonials"><div className="testimonial-video"><video key={testimonialVideos[testimonialIndex].src} autoPlay muted loop playsInline controls aria-label={testimonialVideos[testimonialIndex].title}><source src={testimonialVideos[testimonialIndex].src} type="video/mp4" /></video><div className="testimonial-count"><span>{String(testimonialIndex + 1).padStart(2, '0')}</span><span>/ {String(testimonialVideos.length).padStart(2, '0')}</span></div></div><div className="testimonial-copy"><SectionLabel number="04">Guest stories</SectionLabel><blockquote>“{testimonialVideos[testimonialIndex].quote}”</blockquote><p>{testimonialVideos[testimonialIndex].description}</p><h3>{testimonialVideos[testimonialIndex].title}</h3><div className="testimonial-controls"><button type="button" onClick={() => setTestimonialIndex((index) => (index - 1 + testimonialVideos.length) % testimonialVideos.length)} aria-label="Previous guest story">←</button>{testimonialVideos.map((video, index) => <button key={video.src} type="button" className={index === testimonialIndex ? 'is-active' : ''} onClick={() => setTestimonialIndex(index)} aria-label={`Show guest story ${index + 1}`} aria-pressed={index === testimonialIndex} />)}<button type="button" onClick={() => setTestimonialIndex((index) => (index + 1) % testimonialVideos.length)} aria-label="Next guest story">→</button></div></div></section>
 
-      <section className="visit-section" id="visit"><div className="visit-photo"><img src={`${ASSET}venue-inside.jpeg`} alt="Inside the warm, casual dining room at Testimony Cafe" /><div className="photo-caption"><span>Inside Testimony Cafe</span><span>01 / 02</span></div></div><div className="visit-copy"><SectionLabel number="05">Find us</SectionLabel><p className="visit-kicker">The best part of the day<br />is closer than you think.</p><h2>Come hungry.<br /><em>Leave smiling.</em></h2><p className="visit-body">Find us in Kasarani, Nairobi. Walk in for a quick lunch or make a proper evening of it — there is always a seat, a cold drink, and something good on the way.</p><a className="map-button" href="https://maps.app.goo.gl/td7ZCNeRQx5hRbhT8" target="_blank" rel="noreferrer">Open directions <span aria-hidden="true">↗</span></a><div className="visit-details"><div><span>Location</span><strong>Kasarani, Nairobi</strong></div><div><span>Best for</span><strong>Lunch · Dinner · Catch-ups</strong></div></div></div></section>
+      <section className="visit-section" id="visit"><div className="visit-photo"><img src={`${ASSET}venue-inside.jpeg`} alt="Inside the warm, casual dining room at Testimony Cafe" /><div className="photo-caption"><span>Inside Testimony Cafe</span><span>01 / 02</span></div></div><div className="visit-copy"><SectionLabel number="05">Find us</SectionLabel><p className="visit-kicker">The best part of the day<br />is closer than you think.</p><h2>Come hungry.<br /><em>Leave smiling.</em></h2><p className="visit-body">Find us in Kasarani, Nairobi. Walk in for a quick lunch or make a proper evening of it — there is always a seat, a cold drink, and something good on the way.</p><a className="map-button" href="https://maps.app.goo.gl/td7ZCNeRQx5hRbhT8" target="_blank" rel="noreferrer">Open directions <span aria-hidden="true">↗</span></a><a className="instagram-link" href="https://www.instagram.com/testimony_cafeteria/" target="_blank" rel="noreferrer">Instagram <span>@testimony_cafeteria</span> ↗</a><div className="visit-details"><div><span>Location</span><strong>Kasarani, Nairobi</strong></div><div><span>Best for</span><strong>Lunch · Dinner · Catch-ups</strong></div></div><div className="map-card"><iframe title="Testimony Cafeteria location map" src="https://www.google.com/maps?q=-1.2309179,36.9245861&z=16&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" /></div></div></section>
     </main>
 
     <footer className="site-footer"><Brand footer /><p>Come for the plate.<br />Stay for the testimony.</p><div className="footer-meta"><span>© 2026 Testimony Cafe</span><a href="#top">Back to top ↑</a></div></footer>
