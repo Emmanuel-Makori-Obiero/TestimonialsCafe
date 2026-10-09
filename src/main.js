@@ -1,11 +1,11 @@
 import './styles.css';
 
-const STORAGE = '/manus-storage/';
+const STORAGE = '/assets/';
 
 const slides = [
   {
     type: 'image',
-    src: `${STORAGE}async-images/KT1hh27E7cOxRkEGSxOExL/image-1.webp`,
+    src: `${STORAGE}generated-grill.webp`,
     alt: 'A natural editorial photograph of grilled beef, chips and greens',
     eyebrow: 'Fire from the grill',
     title: 'Good food has a sound.',
@@ -14,9 +14,10 @@ const slides = [
     label: 'Minji beef'
   },
   {
-    type: 'image',
-    src: `${STORAGE}async-images/KT1hh27E7cOxRkEGSxOExL/image-2.webp`,
-    alt: 'A natural editorial photograph of fresh mango and passion fruit juice',
+    type: 'video',
+    src: `${STORAGE}cafe-video-2.mp4`,
+    poster: `${STORAGE}grill-feature.jpeg`,
+    alt: 'Video of food and service at Testimony Cafe',
     eyebrow: 'The plate to share',
     title: 'A little bit of everything.',
     text: 'Classic Kenyan comfort, generous portions, and the kind of lunch that fixes your whole day.',
@@ -24,10 +25,9 @@ const slides = [
     label: 'Githeri cabbage'
   },
   {
-    type: 'video',
-    src: `${STORAGE}cafe-video-2_d9c8297d.mp4`,
-    poster: `${STORAGE}grill-feature_e775cdc1.jpeg`,
-    alt: 'Video of food and service at Testimony Cafe',
+    type: 'image',
+    src: `${STORAGE}generated-juice.webp`,
+    alt: 'A natural editorial photograph of fresh mango and passion fruit juice',
     eyebrow: 'Made for the moment',
     title: 'Fresh juice. Cold glass.',
     text: 'Bright, no-added-sugar blends to go with the lunch you came for.',
@@ -35,9 +35,10 @@ const slides = [
     label: 'Passion juice small'
   },
   {
-    type: 'image',
-    src: `${STORAGE}menu-githeri_c827f683.jpeg`,
-    alt: 'Githeri and rice dishes shown on the Testimony Cafe menu',
+    type: 'video',
+    src: `${STORAGE}cafe-video-3.mp4`,
+    poster: `${STORAGE}menu-githeri.jpeg`,
+    alt: 'Video of githeri and rice dishes at Testimony Cafe',
     eyebrow: 'Everyday favourites',
     title: 'The comfort classics.',
     text: 'Githeri, matoke, mukimo and pilau, served the way a neighbourhood cafe should.',
@@ -45,10 +46,9 @@ const slides = [
     label: 'Matoke'
   },
   {
-    type: 'video',
-    src: `${STORAGE}cafe-video-3_17a44c8f.mp4`,
-    poster: `${STORAGE}venue-front_99dd7cd0.jpeg`,
-    alt: 'Video of the cafe atmosphere and front entrance',
+    type: 'image',
+    src: `${STORAGE}venue-front.jpeg`,
+    alt: 'The front entrance of Testimony Cafe',
     eyebrow: 'Your table is ready',
     title: 'Come as you are.',
     text: 'A warm hotel cafe in Kasarani for quick bites, long catch-ups, and one more cup.',
@@ -114,12 +114,12 @@ const menu = [
 ];
 
 const gallery = [
-  ['venue-front_99dd7cd0.jpeg', 'Find us in Kasarani', 'venue'],
-  ['grill-feature_e775cdc1.jpeg', 'Straight from the grill', 'food'],
-  ['menu-cover_eef7590c.jpeg', 'The real menu, online', 'menu'],
-  ['venue-entry_bc652ab4.jpeg', 'Walk in hungry', 'venue'],
-  ['menu-main-course_68c98dc3.jpeg', 'Main course, made easy', 'menu'],
-  ['menu-juices_d5add0be.jpeg', 'Bright, fresh, no added sugar', 'food']
+  ['venue-front.jpeg', 'Find us in Kasarani', 'venue'],
+  ['grill-feature.jpeg', 'Straight from the grill', 'food'],
+  ['menu-cover.jpeg', 'The real menu, online', 'menu'],
+  ['venue-entry.jpeg', 'Walk in hungry', 'venue'],
+  ['menu-main-course.jpeg', 'Main course, made easy', 'menu'],
+  ['menu-juices.jpeg', 'Bright, fresh, no added sugar', 'food']
 ];
 
 const app = document.querySelector('#app');
@@ -149,9 +149,10 @@ app.innerHTML = `
           <button class="round-control" type="button" id="prev-slide" aria-label="Previous featured item">←</button>
           <div class="slide-count" aria-live="polite"><span id="slide-current">01</span><span class="count-rule"></span><span>0${slides.length}</span></div>
           <button class="round-control" type="button" id="next-slide" aria-label="Next featured item">→</button>
+          <button class="round-control pause-control" type="button" id="pause-slide" aria-label="Pause automatic rotation" aria-pressed="false">⏸</button>
         </div>
       </div>
-      <div class="hero-progress" role="tablist" aria-label="Choose featured item" id="hero-progress"></div>
+      <div class="hero-progress" aria-label="Choose featured item" id="hero-progress"></div>
       <a class="scroll-cue" href="#menu"><span>Scroll to explore</span><span aria-hidden="true">↓</span></a>
     </section>
 
@@ -166,8 +167,8 @@ app.innerHTML = `
 
     <section class="menu-section" id="menu">
       <div class="section-heading"><div class="section-label"><span>02</span><span class="label-line"></span><span>Digital menu</span></div><h2>Pick your<br><em>kind of hungry.</em></h2><p>Real prices from the menu at the cafe, so you can decide before you arrive.</p></div>
-      <div class="menu-tabs" role="tablist" aria-label="Menu categories" id="menu-tabs"></div>
-      <div class="menu-panel" id="menu-panel"></div>
+      <nav class="menu-tabs" aria-label="Menu categories" id="menu-tabs"></nav>
+      <div class="menu-panel" id="menu-panel" aria-live="polite"></div>
     </section>
 
     <section class="gallery-section" id="gallery">
@@ -186,10 +187,13 @@ app.innerHTML = `
 
 let currentSlide = 0;
 let slideTimer;
+let isPaused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const media = document.querySelector('#hero-media');
 const copy = document.querySelector('#hero-copy');
 const progress = document.querySelector('#hero-progress');
 const current = document.querySelector('#slide-current');
+const pauseButton = document.querySelector('#pause-slide');
+if (isPaused) { pauseButton.setAttribute('aria-pressed', 'true'); pauseButton.setAttribute('aria-label', 'Resume automatic rotation'); pauseButton.textContent = '▶'; }
 
 function renderSlide(index, direction = 'next') {
   currentSlide = (index + slides.length) % slides.length;
@@ -204,27 +208,30 @@ function renderSlide(index, direction = 'next') {
   current.textContent = String(currentSlide + 1).padStart(2, '0');
   progress.querySelectorAll('button').forEach((button, i) => {
     button.classList.toggle('is-active', i === currentSlide);
-    button.setAttribute('aria-selected', i === currentSlide ? 'true' : 'false');
+    button.setAttribute('aria-pressed', i === currentSlide ? 'true' : 'false');
   });
+  const video = media.querySelector('video');
+  if (isPaused && video) video.pause();
 }
 
 slides.forEach((slide, i) => {
   const button = document.createElement('button');
-  button.type = 'button'; button.className = `progress-dot${i === 0 ? ' is-active' : ''}`; button.setAttribute('role', 'tab'); button.setAttribute('aria-label', `Show featured item ${i + 1}`); button.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+  button.type = 'button'; button.className = `progress-dot${i === 0 ? ' is-active' : ''}`; button.setAttribute('aria-label', `Show featured item ${i + 1}`); button.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
   button.addEventListener('click', () => { renderSlide(i); resetTimer(); }); progress.appendChild(button);
 });
 
 document.querySelector('#prev-slide').addEventListener('click', () => { renderSlide(currentSlide - 1, 'prev'); resetTimer(); });
 document.querySelector('#next-slide').addEventListener('click', () => { renderSlide(currentSlide + 1); resetTimer(); });
-function resetTimer() { clearInterval(slideTimer); slideTimer = setInterval(() => renderSlide(currentSlide + 1), 6500); }
+pauseButton.addEventListener('click', () => { isPaused = !isPaused; pauseButton.setAttribute('aria-pressed', String(isPaused)); pauseButton.setAttribute('aria-label', isPaused ? 'Resume automatic rotation' : 'Pause automatic rotation'); pauseButton.textContent = isPaused ? '▶' : '⏸'; const video = media.querySelector('video'); if (video) isPaused ? video.pause() : video.play(); resetTimer(); });
+function resetTimer() { clearInterval(slideTimer); if (!isPaused) slideTimer = setInterval(() => renderSlide(currentSlide + 1), 6500); }
 renderSlide(0); resetTimer();
 
 const tabs = document.querySelector('#menu-tabs'); const panel = document.querySelector('#menu-panel'); let activeCategory = menu[0].id;
-menu.forEach((category) => { const button = document.createElement('button'); button.type = 'button'; button.textContent = category.label; button.className = category.id === activeCategory ? 'is-active' : ''; button.setAttribute('role', 'tab'); button.setAttribute('aria-selected', category.id === activeCategory ? 'true' : 'false'); button.addEventListener('click', () => { activeCategory = category.id; tabs.querySelectorAll('button').forEach((b) => { const active = b.textContent === category.label; b.classList.toggle('is-active', active); b.setAttribute('aria-selected', active ? 'true' : 'false'); }); renderMenu(category); }); tabs.appendChild(button); });
+menu.forEach((category) => { const button = document.createElement('button'); button.type = 'button'; button.textContent = category.label; button.className = category.id === activeCategory ? 'is-active' : ''; button.setAttribute('aria-pressed', category.id === activeCategory ? 'true' : 'false'); button.addEventListener('click', () => { activeCategory = category.id; tabs.querySelectorAll('button').forEach((b) => { const active = b.textContent === category.label; b.classList.toggle('is-active', active); b.setAttribute('aria-pressed', active ? 'true' : 'false'); }); renderMenu(category); }); tabs.appendChild(button); });
 function renderMenu(category) { panel.innerHTML = `<div class="menu-panel-head"><span class="eyebrow">${category.kicker}</span><h3>${category.intro}</h3></div><div class="menu-items">${category.items.map(([name, price]) => `<div class="menu-item"><span>${name}</span><span class="menu-dots"></span><strong>${price}</strong></div>`).join('')}</div><div class="menu-note">Prices shown in Kenyan shillings. Items marked “Ask today” are updated in-house.</div>`; }
 renderMenu(menu[0]);
 
-const galleryGrid = document.querySelector('#gallery-grid'); galleryGrid.innerHTML = gallery.map(([image, caption, tag], i) => `<figure class="gallery-card gallery-${i + 1}"><img src="${STORAGE}${image.includes('venue-front') ? 'venue-front_99dd7cd0.jpeg' : image.includes('grill-feature') ? 'grill-feature_e775cdc1.jpeg' : image.includes('menu-cover') ? 'menu-cover_eef7590c.jpeg' : image.includes('venue-entry') ? 'venue-entry_bc652ab4.jpeg' : image.includes('menu-main-course') ? 'menu-main-course_68c98dc3.jpeg' : 'menu-juices_d5add0be.jpeg'}" alt="${caption}"><figcaption><span>${String(i + 1).padStart(2, '0')}</span><strong>${caption}</strong><small>${tag}</small></figcaption></figure>`).join('');
+const galleryGrid = document.querySelector('#gallery-grid'); galleryGrid.innerHTML = gallery.map(([image, caption, tag], i) => `<figure class="gallery-card gallery-${i + 1}"><img src="${STORAGE}${image}" alt="${caption}"><figcaption><span>${String(i + 1).padStart(2, '0')}</span><strong>${caption}</strong><small>${tag}</small></figcaption></figure>`).join('');
 
 const toggle = document.querySelector('.menu-toggle'); const mobileNav = document.querySelector('.mobile-nav'); toggle.addEventListener('click', () => { const open = toggle.getAttribute('aria-expanded') === 'true'; toggle.setAttribute('aria-expanded', String(!open)); mobileNav.classList.toggle('is-open', !open); }); mobileNav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => { toggle.setAttribute('aria-expanded', 'false'); mobileNav.classList.remove('is-open'); }));
 
