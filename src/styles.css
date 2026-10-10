@@ -67,3 +67,8 @@
   .footer-top { align-items:flex-start; flex-direction:column; gap:20px; }
   .footer-links { gap:13px 18px; }
 }
+
+.whatsapp-icon { width:17px; height:17px; flex:0 0 17px; fill:currentColor; }
+.whatsapp-button .whatsapp-icon { color:#25D366; }
+.footer-links a { display:inline-flex; align-items:center; gap:7px; }
+.footer-links .whatsapp-icon { color:#25D366; width:15px; height:15px; flex-basis:15px; }
